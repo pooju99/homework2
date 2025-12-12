@@ -2,9 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import 'firebase_options.dart';
+
+// Global theme controller for light/dark mode
+final ValueNotifier<ThemeMode> themeModeNotifier =
+    ValueNotifier<ThemeMode>(ThemeMode.light);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,54 +24,117 @@ class ChatBoardsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: Colors.deepPurple,
-      brightness: Brightness.light,
-    );
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeModeNotifier,
+      builder: (context, mode, _) {
+        const seed = Colors.deepPurple;
 
-    return MaterialApp(
-      title: 'Chatboards for the New Age',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: colorScheme,
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF2ECFF),
-        appBarTheme: AppBarTheme(
-          backgroundColor: colorScheme.surface,
-          foregroundColor: colorScheme.onSurface,
-          elevation: 0,
-          centerTitle: true,
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade300),
+        final lightScheme = ColorScheme.fromSeed(
+          seedColor: seed,
+          brightness: Brightness.light,
+        );
+
+        final darkScheme = ColorScheme.fromSeed(
+          seedColor: seed,
+          brightness: Brightness.dark,
+        );
+
+        final lightTextTheme = GoogleFonts.poppinsTextTheme();
+        final darkBase = ThemeData(brightness: Brightness.dark).textTheme;
+        final darkTextTheme = GoogleFonts.poppinsTextTheme(darkBase);
+
+        final lightTheme = ThemeData(
+          colorScheme: lightScheme,
+          useMaterial3: true,
+          scaffoldBackgroundColor: const Color(0xFFF2ECFF),
+          textTheme: lightTextTheme,
+          appBarTheme: AppBarTheme(
+            backgroundColor: lightScheme.surface,
+            foregroundColor: lightScheme.onSurface,
+            elevation: 0,
+            centerTitle: true,
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade300),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: lightScheme.primary, width: 2),
+            ),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: colorScheme.primary, width: 2),
+          cardTheme: CardThemeData(
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
           ),
-        ),
-        cardTheme: CardThemeData(
-          elevation: 3,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+          snackBarTheme: SnackBarThemeData(
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
-        ),
-        snackBarTheme: SnackBarThemeData(
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+        );
+
+        final darkTheme = ThemeData(
+          colorScheme: darkScheme,
+          brightness: Brightness.dark,
+          useMaterial3: true,
+          scaffoldBackgroundColor: const Color(0xFF050510),
+          textTheme: darkTextTheme,
+          appBarTheme: AppBarTheme(
+            backgroundColor: darkScheme.surface,
+            foregroundColor: darkScheme.onSurface,
+            elevation: 0,
+            centerTitle: true,
           ),
-        ),
-      ),
-      home: const SplashScreen(),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: darkScheme.surfaceVariant.withOpacity(0.8),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: darkScheme.outlineVariant),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: darkScheme.outlineVariant),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: darkScheme.primary, width: 2),
+            ),
+          ),
+          cardTheme: CardThemeData(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+          snackBarTheme: SnackBarThemeData(
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+
+        return MaterialApp(
+          title: 'Chatboards for the New Age',
+          debugShowCheckedModeBanner: false,
+          themeMode: mode,
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          home: const SplashScreen(),
+        );
+      },
     );
   }
 }
@@ -649,6 +717,11 @@ class _HomeShellState extends State<HomeShell> {
     final user = FirebaseAuth.instance.currentUser;
     final cs = Theme.of(context).colorScheme;
 
+    String initial = 'U';
+    if (user?.email != null && user!.email!.isNotEmpty) {
+      initial = user.email![0].toUpperCase();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -686,8 +759,11 @@ class _HomeShellState extends State<HomeShell> {
                       return const Text('User');
                     }
                     final data = snapshot.data!.data()!;
+                    final name =
+                        '${data['firstName'] ?? ''} ${data['lastName'] ?? ''}'
+                            .trim();
                     return Text(
-                      '${data['firstName'] ?? ''} ${data['lastName'] ?? ''}',
+                      name.isEmpty ? 'User' : name,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     );
                   },
@@ -699,7 +775,7 @@ class _HomeShellState extends State<HomeShell> {
                       radius: 24,
                       backgroundColor: Colors.white.withOpacity(0.15),
                       child: Text(
-                        (user?.email ?? 'U').substring(0, 1).toUpperCase(),
+                        initial,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 26,
@@ -731,18 +807,21 @@ class _HomeShellState extends State<HomeShell> {
             ListTile(
               leading: const Icon(Icons.forum_outlined),
               title: const Text('Message Boards'),
+              subtitle: const Text('See all boards'),
               selected: _selectedIndex == 0,
               onTap: () => _onSelectPage(0),
             ),
             ListTile(
               leading: const Icon(Icons.person_outline),
               title: const Text('Profile'),
+              subtitle: const Text('Edit your details'),
               selected: _selectedIndex == 1,
               onTap: () => _onSelectPage(1),
             ),
             ListTile(
               leading: const Icon(Icons.settings_outlined),
               title: const Text('Settings'),
+              subtitle: const Text('Theme, security, more'),
               selected: _selectedIndex == 2,
               onTap: () => _onSelectPage(2),
             ),
@@ -804,6 +883,18 @@ class MessageBoardsScreen extends StatelessWidget {
     );
   }
 
+  String _subtitleForBoard(String id) {
+    switch (id) {
+      case 'tech':
+        return 'Discuss all things technology';
+      case 'random':
+        return 'Off-topic, memes & fun';
+      case 'general':
+      default:
+        return 'Announcements and casual chat';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -820,7 +911,7 @@ class MessageBoardsScreen extends StatelessWidget {
               crossAxisCount: gridCount,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: isWide ? 1.6 : 3.5,
+              childAspectRatio: isWide ? 1.7 : 3.5,
             ),
             itemCount: kBoards.length,
             itemBuilder: (context, index) {
@@ -879,20 +970,54 @@ class MessageBoardsScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.9),
-                                  borderRadius: BorderRadius.circular(999),
+                              Text(
+                                _subtitleForBoard(board.id),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black.withOpacity(0.65),
                                 ),
-                                child: const Text(
-                                  'Public board',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.9),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: const Text(
+                                      'Public board',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  const SizedBox(width: 6),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        height: 8,
+                                        width: 8,
+                                        decoration: BoxDecoration(
+                                          color: Colors.greenAccent.shade400,
+                                          borderRadius:
+                                              BorderRadius.circular(999),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Active now',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.black.withOpacity(0.7),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -928,11 +1053,22 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isSending = false;
   String? _displayName;
   String? _userId;
+  bool _isTyping = false; // local typing indicator
 
   @override
   void initState() {
     super.initState();
     _loadUserInfo();
+    _messageController.addListener(_onTypingChanged);
+  }
+
+  void _onTypingChanged() {
+    final nowTyping = _messageController.text.trim().isNotEmpty;
+    if (nowTyping != _isTyping) {
+      setState(() {
+        _isTyping = nowTyping;
+      });
+    }
   }
 
   Future<void> _loadUserInfo() async {
@@ -971,6 +1107,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    _messageController.removeListener(_onTypingChanged);
     _messageController.dispose();
     super.dispose();
   }
@@ -1022,7 +1159,9 @@ class _ChatScreenState extends State<ChatScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.white,
+              Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF050510)
+                  : Colors.white,
               base.withOpacity(0.08),
             ],
             begin: Alignment.topCenter,
@@ -1079,7 +1218,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       final displayName = data['displayName'] ?? 'Unknown';
                       final createdAt = data['createdAt'] as Timestamp?;
                       final dateStr = createdAt == null
-                          ? ''
+                          ? 'sending...'
                           : DateFormat('hh:mm a').format(createdAt.toDate());
                       final senderId = data['userId'] ?? '';
                       final isMe = senderId == currentUid;
@@ -1089,18 +1228,39 @@ class _ChatScreenState extends State<ChatScreen> {
                         displayName: displayName,
                         time: dateStr,
                         isMe: isMe,
+                        // simple status: clock when timestamp null, check when has timestamp
+                        statusIcon: isMe
+                            ? (createdAt == null ? Icons.schedule : Icons.check)
+                            : null,
                       );
                     },
                   );
                 },
               ),
             ),
+            if (_isTyping)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'You are typing...',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: cs.primary.withOpacity(0.7),
+                    ),
+                  ),
+                ),
+              ),
             SafeArea(
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? cs.surface
+                      : Colors.white,
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 8,
@@ -1119,7 +1279,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 14, vertical: 10),
                           filled: true,
-                          fillColor: cs.surfaceVariant.withOpacity(0.4),
+                          fillColor:
+                              cs.surfaceVariant.withOpacity(0.4),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
                             borderSide: BorderSide.none,
@@ -1167,82 +1328,118 @@ class _ChatBubble extends StatelessWidget {
   final String displayName;
   final String time;
   final bool isMe;
+  final IconData? statusIcon;
 
   const _ChatBubble({
     required this.text,
     required this.displayName,
     required this.time,
     required this.isMe,
+    this.statusIcon,
   });
+
+  Color _avatarColor(String name) {
+    final code = name.hashCode;
+    final index = code % 360;
+    return HSLColor.fromAHSL(1, index.toDouble(), 0.45, 0.55).toColor();
+  }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final initial =
+        displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
+
+    final bubble = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: isMe ? cs.primary : Theme.of(context).cardColor,
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(18),
+          topRight: const Radius.circular(18),
+          bottomLeft: Radius.circular(isMe ? 18 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 18),
+        ),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+            color: Colors.black.withOpacity(0.07),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!isMe)
+            Text(
+              displayName,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                color: cs.primary,
+              ),
+            ),
+          if (!isMe) const SizedBox(height: 2),
+          Text(
+            text,
+            style: TextStyle(
+              color: isMe ? Colors.white : Colors.black87,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                time,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: isMe
+                      ? Colors.white.withOpacity(0.8)
+                      : Colors.grey.shade600,
+                ),
+              ),
+              if (statusIcon != null) ...[
+                const SizedBox(width: 4),
+                Icon(
+                  statusIcon,
+                  size: 12,
+                  color: isMe
+                      ? Colors.white.withOpacity(0.9)
+                      : Colors.grey.shade600,
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment:
             isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          if (!isMe) const SizedBox(width: 6),
-          Flexible(
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: isMe ? cs.primary : Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(18),
-                  topRight: const Radius.circular(18),
-                  bottomLeft: Radius.circular(isMe ? 18 : 4),
-                  bottomRight: Radius.circular(isMe ? 4 : 18),
+          if (!isMe) ...[
+            CircleAvatar(
+              radius: 14,
+              backgroundColor: _avatarColor(displayName),
+              child: Text(
+                initial,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                    color: Colors.black.withOpacity(0.07),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (!isMe)
-                    Text(
-                      displayName,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                        color: cs.primary,
-                      ),
-                    ),
-                  if (!isMe) const SizedBox(height: 2),
-                  Text(
-                    text,
-                    style: TextStyle(
-                      color: isMe ? Colors.white : Colors.black87,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Text(
-                      time,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: isMe
-                            ? Colors.white.withOpacity(0.8)
-                            : Colors.grey.shade600,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
-          ),
+            const SizedBox(width: 6),
+          ],
+          Flexible(child: bubble),
           if (isMe) const SizedBox(width: 6),
         ],
       ),
@@ -1417,16 +1614,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _newPasswordController = TextEditingController();
 
   bool _isLoading = true;
+  bool _isDarkMode = false;
 
   @override
   void initState() {
     super.initState();
+    _isDarkMode = themeModeNotifier.value == ThemeMode.dark;
     _loadSettings();
   }
 
   Future<void> _loadSettings() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      return;
+    }
 
     final doc =
         await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
@@ -1532,6 +1738,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  void _toggleDarkMode(bool value) {
+    setState(() {
+      _isDarkMode = value;
+    });
+    themeModeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -1585,6 +1798,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Card(
+                child: SwitchListTile(
+                  title: const Text('Dark mode'),
+                  subtitle:
+                      const Text('Switch between light and dark theme'),
+                  value: _isDarkMode,
+                  onChanged: _toggleDarkMode,
+                  secondary: Icon(
+                    _isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                    color: cs.primary,
                   ),
                 ),
               ),
