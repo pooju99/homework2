@@ -30,7 +30,7 @@ class ChatBoardsApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: colorScheme,
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF4F2FF),
+        scaffoldBackgroundColor: const Color(0xFFF2ECFF),
         appBarTheme: AppBarTheme(
           backgroundColor: colorScheme.surface,
           foregroundColor: colorScheme.onSurface,
@@ -55,13 +55,15 @@ class ChatBoardsApp extends StatelessWidget {
         ),
         cardTheme: CardThemeData(
           elevation: 3,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
         ),
         snackBarTheme: SnackBarThemeData(
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
       home: const SplashScreen(),
@@ -122,8 +124,8 @@ class _SplashScreenState extends State<SplashScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              cs.primary.withOpacity(0.95),
-              cs.secondaryContainer.withOpacity(0.9),
+              cs.primary.withOpacity(0.98),
+              cs.secondary.withOpacity(0.9),
               cs.surface,
             ],
             begin: Alignment.topLeft,
@@ -149,14 +151,14 @@ class _SplashScreenState extends State<SplashScreen> {
                     padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withOpacity(0.14),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withOpacity(0.65),
                         width: 2,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
+                          color: Colors.black.withOpacity(0.15),
                           blurRadius: 18,
                           offset: const Offset(0, 8),
                         ),
@@ -272,8 +274,8 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              cs.primary.withOpacity(0.1),
-              cs.secondary.withOpacity(0.08),
+              cs.primary.withOpacity(0.12),
+              cs.secondary.withOpacity(0.10),
               Colors.white,
             ],
             begin: Alignment.topLeft,
@@ -476,8 +478,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              cs.primary.withOpacity(0.08),
-              cs.secondary.withOpacity(0.06),
+              cs.primary.withOpacity(0.10),
+              cs.secondary.withOpacity(0.08),
               Colors.white,
             ],
             begin: Alignment.topRight,
@@ -639,7 +641,7 @@ class _HomeShellState extends State<HomeShell> {
     setState(() {
       _selectedIndex = index;
     });
-    Navigator.of(context).pop(); // close drawer
+    Navigator.of(context).pop();
   }
 
   @override
@@ -691,16 +693,37 @@ class _HomeShellState extends State<HomeShell> {
                   },
                 ),
                 accountEmail: Text(user?.email ?? ''),
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: Colors.white.withOpacity(0.15),
-                  child: Text(
-                    (user?.email ?? 'U').substring(0, 1).toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
+                currentAccountPicture: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.white.withOpacity(0.15),
+                      child: Text(
+                        (user?.email ?? 'U').substring(0, 1).toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
+                    Positioned(
+                      bottom: 2,
+                      right: 2,
+                      child: Container(
+                        height: 12,
+                        width: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.greenAccent,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: Colors.black.withOpacity(0.15),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -809,8 +832,8 @@ class MessageBoardsScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        cs.primaryContainer.withOpacity(0.9),
-                        cs.secondaryContainer.withOpacity(0.9),
+                        cs.primaryContainer.withOpacity(0.95),
+                        cs.secondaryContainer.withOpacity(0.95),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -834,7 +857,7 @@ class MessageBoardsScreen extends StatelessWidget {
                           width: 44,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.85),
+                            color: Colors.white.withOpacity(0.9),
                           ),
                           child: Icon(
                             board.icon,
@@ -844,12 +867,34 @@ class MessageBoardsScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: Text(
-                            board.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                board.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: const Text(
+                                  'Public board',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const Icon(Icons.chevron_right_rounded,
@@ -912,6 +957,18 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  Color _boardBaseColor(ColorScheme cs) {
+    switch (widget.board.id) {
+      case 'tech':
+        return Colors.blueGrey.shade400;
+      case 'random':
+        return Colors.orange.shade400;
+      case 'general':
+      default:
+        return cs.primary;
+    }
+  }
+
   @override
   void dispose() {
     _messageController.dispose();
@@ -952,6 +1009,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final base = _boardBaseColor(cs);
     final messagesQuery = FirebaseFirestore.instance
         .collection('messages')
         .where('boardId', isEqualTo: widget.board.id);
@@ -965,7 +1023,7 @@ class _ChatScreenState extends State<ChatScreen> {
           gradient: LinearGradient(
             colors: [
               Colors.white,
-              cs.secondaryContainer.withOpacity(0.12),
+              base.withOpacity(0.08),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -1137,10 +1195,8 @@ class _ChatBubble extends StatelessWidget {
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
                   topRight: const Radius.circular(18),
-                  bottomLeft:
-                      Radius.circular(isMe ? 18 : 4), // tail-ish corner
-                  bottomRight:
-                      Radius.circular(isMe ? 4 : 18),
+                  bottomLeft: Radius.circular(isMe ? 18 : 4),
+                  bottomRight: Radius.circular(isMe ? 4 : 18),
                 ),
                 boxShadow: [
                   BoxShadow(
